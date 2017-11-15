@@ -12,9 +12,9 @@ Unlike its graphic counterpart, resetter-cli does not contain any extra features
 
 #Screenshots
 
-![alt tag](https://github.com/gaining/Resetter/blob/master/resetter-cli/Menu.png)
-![alt tag](https://github.com/gaining/Resetter/blob/master/resetter-cli/s2.png)
-![alt tag](https://github.com/gaining/Resetter/blob/master/resetter-cli/s3.png)
-![alt tag](https://github.com/gaining/Resetter/blob/master/resetter-cli/s4.png)
-![alt tag](https://github.com/gaining/Resetter/blob/master/resetter-cli/s5.png)
+![alt tag](https://github.com/gaining/resetter-cli/blob/master/resetter-cli/Menu.png)
+![alt tag](https://github.com/gaining/resetter-cli/blob/master/resetter-cli/s2.png)
+![alt tag](https://github.com/gaining/resetter-cli/blob/master/resetter-cli/s3.png)
+![alt tag](https://github.com/gaining/resetter-cli/blob/master/resetter-cli/s4.png)
+![alt tag](https://github.com/gaining/resetter-cli/blob/master/resetter-cli/s5.png)
 
