@@ -10,3 +10,11 @@ This program is in alpha stage, I've tested it and it works for me. I'm really l
 
 Unlike its graphic counterpart, resetter-cli does not contain any extra features yet, only the main basics are available. More features will be added as the app matures in stability.
 
+#Screenshots
+
+![alt tag](https://github.com/gaining/Resetter/blob/master/resetter-cli/Menu.png)
+![alt tag](https://github.com/gaining/Resetter/blob/master/resetter-cli/s2.png)
+![alt tag](https://github.com/gaining/Resetter/blob/master/resetter-cli/s3.png)
+![alt tag](https://github.com/gaining/Resetter/blob/master/resetter-cli/s4.png)
+![alt tag](https://github.com/gaining/Resetter/blob/master/resetter-cli/s5.png)
+
