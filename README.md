@@ -2,9 +2,9 @@
 
 Easiest way to reset your debian based linux back to stock on the terminal. It is built using python3 and the python-curses library. This is targeted mostly at servers with no GUI but it can be easily be used on a desktop computer with a GUI.
 
-#Status
+#Status pre-alpha
 
-This program is in alpha stage, I've tested it and it works for me. I'm really looking for feedbacks and strongly urge you to provide feedback (bugs encountered, improvements, etc). Again, if you do not have a github account do not hesitate to contact me by email.
+This program is in pre - alpha stage, no builds have been released yet. It is constantly being developed in order to be in working order. If you're not a python dev, you won't be able to test it until it is in working order.
 
 #Features
 
@@ -17,5 +17,3 @@ Unlike its graphic counterpart, resetter-cli does not contain any extra features
 ![alt tag](https://github.com/gaining/resetter-cli/blob/master/s3.png)
 ![alt tag](https://github.com/gaining/resetter-cli/blob/master/s4.png)
 ![alt tag](https://github.com/gaining/resetter-cli/blob/master/s5.png)
-
-
