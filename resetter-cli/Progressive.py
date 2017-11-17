@@ -5,14 +5,15 @@ import curses
 import time
 import textwrap
 import subprocess
+import subprocess
 import sys
-#from Account import Account
 from dialog import Dialog
 import os
 
+
 class ProgressBar(object):
 
-    def update_progress(self, progress=None, status="", sig=None, response=False):
+    def update_progress(self, progress=None, status="", sig=5, response=False):
         screen = curses.initscr()
         screen.clear()
         self.response = response
@@ -30,8 +31,8 @@ class ProgressBar(object):
         self.progress = progress
         self.main_screen = curses.newwin(self.window_height-3, self.window_width-3, 1, 1)
 
-        self.custom_user_script = '/usr/lib/resetter/data/scripts/custom_user.sh'
-        self.default_user_script = '/usr/lib/resetter/data/scripts/new-user.sh'
+        self.custom_user_script = '/usr/lib/resetter-cli/data/scripts/custom_user.sh'
+        self.default_user_script = '/usr/lib/resetter-cli/data/scripts/new-user.sh'
         self.no_show = False
         self.remaining = 0
         #self.accounts = Account()
@@ -76,7 +77,7 @@ class ProgressBar(object):
     def cleanup(self, sig, sb, win):
         if sig == 7:
             with open('test.log', 'w') as f:
-                process = subprocess.Popen(['bash', '/usr/lib/resetter/data/scripts/fix-broken.sh'],
+                process = subprocess.Popen(['bash', '/usr/lib/resetter-cli/data/scripts/fix-broken.sh'],
                                            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 for line in iter(process.stdout.readline, ''):
                     sb.addstr(0, 0, textwrap.fill(line, 60))
@@ -84,7 +85,6 @@ class ProgressBar(object):
                     f.write(line)
                 sig += 1
                 self.step(sig, 2)
-                time.sleep(1.3)
                 self.installMissings(sig, sb)
 
     def installMissings(self, sig, sb):
@@ -92,18 +92,18 @@ class ProgressBar(object):
             sb.clear()
             sb.addstr(0, 0, textwrap.fill("Installing missing pacakges", 60))
             sb.refresh()
-            #Code for action
+            subprocess.call(['/usr/bin/python', '/usr/lib/resetter-cli/InstallMissing.py'])
             time.sleep(1)
             sig += 1
             self.step(sig, 2)
             self.addUsers(sb)
 
     def addUsers(self, sb):
-        self.addUser2()
+        #self.addUser2()
         sb.clear()
         sb.addstr(0, 0, textwrap.fill("Finished, press ESC to close", 60))
         sb.refresh()
-        self.showMessage2()
+        #self.showMessage2()
         time.sleep(2)
         x = sb.getch()
         while x != 27:

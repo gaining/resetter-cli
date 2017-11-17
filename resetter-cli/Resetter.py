@@ -1,7 +1,7 @@
 #!/usr/bin/python
 import lsb_release
 from SetEnvironment import Settings
-from termcolor import colored
+from termcolor import colored, cprint
 from picker import Picker
 from Spinner import Spinner
 import os
@@ -9,10 +9,12 @@ import sys
 import subprocess
 import datetime
 import apt
+import time
 
 class ResetterMenu(object):
     def __init__(self, parent=None):
-        print("Resetter-cli v1.0.0\n")
+        cprint("RESETTER-CLI [ALPHA]", 'white', 'on_red', attrs=['bold', 'dark', 'reverse', 'underline'])
+
         self.loop = True
         self.euid = os.geteuid()
         self.os_info = lsb_release.get_lsb_information()
@@ -27,14 +29,15 @@ class ResetterMenu(object):
 
     def menu(self):
         while self.loop:  # While loop which will keep going until loop = False
-            print("1. Automatic Reset")
-            print("2. Custom Reset")
-            print("3. Fix Broken Packages")
-            print("4. Remove Old Kernels")
-            print("5. About")
-            print("6. Exit")
+            cprint("1. Automatic Reset", 'blue', 'on_white',  attrs=['bold', 'dark', 'reverse'])
+            cprint("2. Custom Reset", 'blue', 'on_white',  attrs=['bold', 'dark', 'reverse'])
+            cprint("3. Fix broken packages", 'blue', 'on_white',  attrs=['bold', 'dark', 'reverse'])
+            cprint("4. Remove old kernels", 'blue', 'on_white',  attrs=['bold', 'dark', 'reverse'])
+            cprint("5. About", 'blue', 'on_white', attrs=['bold', 'dark', 'reverse'])
+            cprint("6. Exit ", 'blue', 'on_white', attrs=['bold', 'dark', 'reverse'])
             try:
-                choice = int(raw_input("Choose an option [1-6]: "))
+                choice = int(input(colored("Choose an option [1-6]:", 'green', 'on_white',
+                                               attrs=['bold', 'dark', 'reverse'])))
                 if choice == 1:
                     self.autoReset()
 
@@ -46,6 +49,8 @@ class ResetterMenu(object):
 
                 elif choice == 4:
                     self.removeOldKernels()
+                elif choice == 5:
+                    print ("\n\nAlpha dev branch\n\n")
 
                 elif choice == 6:
                     print("Goodbye")
@@ -58,7 +63,7 @@ class ResetterMenu(object):
     def autoReset(self):
         yes = set(['yes', 'y', ''])
         no = set(['no', 'n'])
-        choice = raw_input(colored("This will reset your " + str(self.os_info['DESCRIPTION']) +
+        choice = input(colored("This will reset your " + str(self.os_info['DESCRIPTION']) +
                                    " installation to its factory defaults. "
                                    "Local user accounts and all their contents will also be removed. "
                                    "Are you sure you'd like to continue?: ",
@@ -75,6 +80,7 @@ class ResetterMenu(object):
                     for line in atr:
                         rapps.append(line)
                 self.spinner.stop()
+                rapps.sort()
                 opts = Picker(
                     title='Automatic Reset: All of these packages will be removed',
                     options=rapps,
@@ -92,7 +98,7 @@ class ResetterMenu(object):
 
     def fixBroken(self):
         with open('test.log', 'w') as f:
-            process = subprocess.Popen(['bash', '/usr/lib/resetter/data/scripts/fix-broken.sh'],
+            process = subprocess.Popen(['bash', '/usr/lib/resetter-cli/data/scripts/fix-broken.sh'],
                                        stdout=subprocess.PIPE,  stderr=subprocess.PIPE)
             for line in iter(process.stdout.readline, ''):
                     sys.stdout.write(line)
@@ -100,8 +106,10 @@ class ResetterMenu(object):
 
     def customReset(self):
         self.spinner.start()
-        rapps = []
+        time.sleep(3)
         self.getMissingPackages()
+
+        rapps = []
 
         if self.lineCount("apps-to-remove") > 0:
             self.getLocalUserList()
@@ -112,6 +120,7 @@ class ResetterMenu(object):
                 for line in atr:
                     rapps.append(line)
             self.spinner.stop()
+            rapps.sort()
             opts = Picker(
                 title='Custom Reset: Select packages to remove',
                 options=rapps
@@ -149,23 +158,22 @@ class ResetterMenu(object):
         self.getInstalledList()
         self.processManifest()
         try:
-            cmd = subprocess.Popen(['grep', '-vxf', 'installed', 'processed-manifest'], stderr=subprocess.STDOUT,
-                                   stdout=subprocess.PIPE)
-            cmd.wait()
-            result = cmd.stdout
             if self.os_info['RELEASE'] == '17.3':
                 word = "vivid"
             else:
                 word = None
-            black_list = ['linux-image', 'linux-headers', "openjdk-7-jre"]
-            with open('apps-to-install', 'w') as output:
-                for line in result:
+            black_list = (['linux-image', 'linux-headers', 'linux-generic', 'linux-kernel-generic',
+                           'openjdk-7-jre', 'grub'])
+            with open("apps-to-install", "w") as output, open("installed", "r") as installed, \
+                    open(self.manifest, "r") as man:
+                diff = set(man).difference(installed)
+                for line in diff:
                     if word is not None and word in line:
                         black_list.append(line)
                     if not any(s in line for s in black_list):
                         output.writelines(line)
-        except (subprocess.CalledProcessError, Exception) as e:
-            print(e.ouput)
+        except Exception as e:
+            print (e.message)
 
     def save(self):
         self.getInstalledList()
@@ -191,7 +199,7 @@ class ResetterMenu(object):
 
     def getOldKernels(self):
         try:
-            cmd = subprocess.Popen(['bash', '/usr/lib/resetter/data/scripts/remove-old-kernels.sh'],
+            cmd = subprocess.Popen(['bash', '/usr/lib/resetter-cli/data/scripts/remove-old-kernels.sh'],
                                    stderr=subprocess.STDOUT, stdout=subprocess.PIPE)
             cmd.wait()
             results = cmd.stdout
@@ -226,33 +234,29 @@ class ResetterMenu(object):
         except Exception as e:
             print(e)
 
-    def lineCount(self, f_in):
-        p = subprocess.Popen(['wc', '-l', f_in], stdout=subprocess.PIPE,
-                             stderr=subprocess.PIPE)
-        result, err = p.communicate()
-        if p.returncode != 0:
-            raise IOError(err)
-        return int(result.strip().split()[0])
+    def lineCount(self, file_path):
+        x = open(file_path).readlines()
+        line_count = len(x)
+        return line_count
 
     def compareFiles(self):
         try:
-            cmd = subprocess.Popen(['grep', '-vxf', 'processed-manifest', 'installed'], stderr=subprocess.STDOUT,
-                                   stdout=subprocess.PIPE)
-            cmd.wait()
-            result = cmd.stdout
-            black_list = ['linux-image', 'linux-headers', 'ca-certificates', 'pyqt4-dev-tools',
-                          'python-apt', 'python-aptdaemon', 'python-qt4', 'python-qt4-doc', 'libqt',
-                          'pyqt4-dev-tools', 'openjdk', 'python-sip', 'snap', 'gksu', 'resetter', 'python-bs4']
-            with open("apps-to-remove", "w") as output:
-                for line in result:
+            black_list = (['linux-image', 'linux-headers', 'linux-generic', 'ca-certificates', 'pyqt4-dev-tools',
+                           'python-apt', 'python-aptdaemon', 'python-qt4', 'python-qt4-doc', 'libqt',
+                           'pyqt4-dev-tools', 'openjdk', 'python-sip', 'gksu', 'grub', 'python-mechanize',
+                           'python-bs4'])
+            with open("apps-to-remove", "w") as output, open("installed", "r") as installed, \
+                    open(self.manifest, "r") as pman:
+                diff = set(installed).difference(pman)
+                for line in diff:
                     if not any(s in line for s in black_list):
                         output.writelines(line)
-        except (subprocess.CalledProcessError, Exception) as e:
-            pass
+        except Exception as e:
+           print(e.message)
 
     def getLocalUserList(self):
         try:
-            cmd = subprocess.Popen(['bash', '/usr/lib/resetter/data/scripts/get-users.sh'], stderr=subprocess.STDOUT,
+            cmd = subprocess.Popen(['bash', '/usr/lib/resetter-cli/data/scripts/get-users.sh'], stderr=subprocess.STDOUT,
                                    stdout=subprocess.PIPE)
             cmd.wait()
             result = cmd.stdout

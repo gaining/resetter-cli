@@ -23,12 +23,12 @@ class UIOpProgress(OpProgress):
 
 
 class UIAcquireProgress(AcquireProgress):
-    def __init__(self):
+    def __init__(self, sig):
         AcquireProgress.__init__(self)
         self.percent = 0.0
         self.a = ProgressBar()
         self.other = False
-        self.sig = 6
+        self.sig = sig
 
     def pulse(self, owner):
         current_item = self.current_items + 1
@@ -66,11 +66,11 @@ class UIAcquireProgress(AcquireProgress):
 
 
 class UIInstallProgress(InstallProgress):
-    def __init__(self):
+    def __init__(self, sig):
         InstallProgress.__init__(self)
         self.last = 0.0
         self.b = ProgressBar()
-        self.step = 6
+        self.step = sig
 
     def fork(self):
         pid = os.fork()

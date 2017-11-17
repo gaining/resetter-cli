@@ -51,7 +51,7 @@ class Account(object):
                 else:
                     i = len(u.read().strip().splitlines())
                 self.remaining = i
-            CustomApply('custom-install2', False, self.answer)
+            CustomApply('remove-list', False, self.answer)
 
     def showMessage2(self):
         if self.answer:

@@ -5,7 +5,8 @@ import apt
 import os
 import textwrap
 import time
-from Account import Account
+#from Account import Account
+from CustomApplyDialog import CustomApply
 import sys
 
 
@@ -47,11 +48,11 @@ class Picker(object):
         self.aborted = False
         self.length = 0
         self.all_options = []
-        # subprocess.call(['/usr/bin/resize', '-s', '34', '107'], stderr=subprocess.STDOUT)
-
         command = ['/usr/bin/resize', '-s', '34', '107']
         with open(os.devnull, "w") as null:
-            subprocess.call(command, stdout=null, stderr=null)
+            p = subprocess.Popen(command, stdout=null, stderr=null)
+            p.wait()
+
 
         for option in options:
             self.all_options.append({
@@ -78,6 +79,7 @@ class Picker(object):
                 'home_del': False
 
             })
+            self.all_options.sort()
             self.length = len(self.all_options)
         self.backup1 = self.all_options[:]
         self.cursor = 0
@@ -138,9 +140,9 @@ class Picker(object):
                     self.outputSelected(self.fName())
                     self.switchPages()
                 elif self.page == 4:
-                    self.a = Account()
+                    #self.a = CustomApply()
                     #self.startProgress()
-                    #self.aborted = True
+                    self.aborted = True
 
                 elif c == ord('d'):
                     if self.page == 1 or self.page == 2:
@@ -222,7 +224,7 @@ class Picker(object):
         elif self.page == 3:
             self.is_usermode = True
             self.arrow = '-->'
-            self.title = "Select users to Delete"
+            self.title = "Select users to Delete (DISABLED FEATURE - SKIP)"
             self.footer = "s = Remove User or Remove User+HomeDir, q = Cancel, -> Next, <- Previous"
             self.offset = 0
             self.cursor = 0
@@ -236,17 +238,15 @@ class Picker(object):
         elif self.page == 4:
             self.curses_stop()
             self.aborted = True
-            self.a = Account()
-            self.a.addUser1()
-
+            CustomApply('remove-list', False, False)
 
     def fName(self):
         if self.page == 1:
-            page_title = 'custom-remove'
+            page_title = 'remove-list'
         elif self.page == 2:
-            page_title = 'custom-remove'
+            page_title = 'remove-list'
         elif self.page == 3:
-            page_title = 'custom-install'
+            page_title = 'install-list'
         elif self.page == 4:
             page_title = 'custom-user-removals'
         return page_title

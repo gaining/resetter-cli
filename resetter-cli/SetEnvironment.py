@@ -9,6 +9,8 @@ import os
 import pwd
 import shutil
 import sys
+from termcolor import colored, cprint
+
 import sqlite3
 import subprocess
 
@@ -17,16 +19,12 @@ class Settings(object):
 
     def __init__(self):
         super(Settings, self).__init__()
-        self.directory = ".resetter/data"
+        self.directory = ".resetter-cli/data"
         self.os_info = lsb_release.get_lsb_information()
         self.euid = os.geteuid()
-        #self.detectRoot()
-        logdir = "/var/log/resetter"
-        if not os.path.exists(logdir):
-            os.makedirs(logdir)
-
-        self.manifests = '/usr/lib/resetter/data/manifests'
-        self.userlists = '/usr/lib/resetter/data/userlists'
+        self.detectRoot()
+        self.manifests = '/usr/lib/resetter-cli/data/manifests'
+        self.userlists = '/usr/lib/resetter-cli/data/userlists'
         if 'PKEXEC_UID' in os.environ:
             self.user = pwd.getpwuid(int(os.environ['PKEXEC_UID'])).pw_name
             working_dir = '/home/{}'.format(self.user)
@@ -37,18 +35,20 @@ class Settings(object):
             print ('Welcome {}'.format(self.user))
         else:
             self.user = os.environ.get('USERNAME')
-            print ('Welcome {}'.format(self.user))
-
+            print ('Welcome {}\n'.format(self.user))
         self.createDirs()
-        os.chdir(self.directory)
-
+        if os.path.isdir(self.directory):
+            os.chdir(self.directory)
+        else:
+            print ("ERROR: {} has not been created".format(self.directory))
         self.manifest = self.detectOS()[0]
         self.userlist = self.detectOS()[1]
         self.window_title = self.detectOS()[2]
         self.filesExist(self.manifest, self.userlist)
+        if os.path.exists(self.manifest):
+            print ('Using: {}\n'.format(self.manifest))
 
     def detectRoot(self):  # root detection function
-        print ('UID is {}'.format(self.euid))
         if self.euid != 0:
             print ("Need to be root to run this program")
             exit(1)
@@ -64,10 +64,12 @@ class Settings(object):
                 if not os.path.exists(self.directory):
                     os.makedirs(self.directory)
                 os.chdir(self.directory)
-                man_dir = os.path.abspath("manifests")
-                userlists_dir = os.path.abspath("userlists")
+                man_dir = os.path.abspath('manifests')
+                userlists_dir = os.path.abspath('userlists')
                 self.copy(self.manifests, man_dir)
                 self.copy(self.userlists, userlists_dir)
+            except:
+                Exception
             finally:
                 os._exit(0)
         os.waitpid(pidx, 0)
@@ -156,5 +158,6 @@ class Settings(object):
     def filesExist(self, manifest, userlist):
         if not os.path.isfile(manifest):
                 print ("Manifest could not be found, please choose a manifest for your system if you have one")
-        if not os.path.isfile(userlist):
-                print ("userlist could not be found, features requiring this file will not work.")
+
+        #if not os.path.isfile(userlist):
+                #print ("userlist could not be found, features requiring this file will not work.")
