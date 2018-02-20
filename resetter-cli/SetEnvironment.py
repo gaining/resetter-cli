@@ -3,16 +3,12 @@
 # This class sets up distro specific settings and working directory
 
 import errno
-import logging
 import lsb_release
 import os
 import pwd
 import shutil
 import sys
-from termcolor import colored, cprint
-
-import sqlite3
-import subprocess
+from termcolor import cprint
 
 
 class Settings(object):
@@ -20,11 +16,11 @@ class Settings(object):
     def __init__(self):
         super(Settings, self).__init__()
         self.directory = ".resetter-cli/data"
-        self.os_info = lsb_release.get_lsb_information()
+        self.os_info = lsb_release.get_distro_information()
         self.euid = os.geteuid()
         self.detectRoot()
-        self.manifests = '/usr/lib/resetter-cli/data/manifests'
-        self.userlists = '/usr/lib/resetter-cli/data/userlists'
+        self.manifests = '/usr/lib/resetter/data/manifests'
+        self.userlists = '/usr/lib/resetter/data/userlists'
         if 'PKEXEC_UID' in os.environ:
             self.user = pwd.getpwuid(int(os.environ['PKEXEC_UID'])).pw_name
             working_dir = '/home/{}'.format(self.user)
@@ -41,8 +37,9 @@ class Settings(object):
             os.chdir(self.directory)
         else:
             print ("ERROR: {} has not been created".format(self.directory))
-        self.manifest = self.detectOS()[0]
-        self.userlist = self.detectOS()[1]
+        print(self.detectOS())
+        self.manifest = ("{}/{}").format(self.manifests, self.detectOS()[0])
+        self.userlist = ("{}/{}").format(self.userlists, self.detectOS()[1])
         self.window_title = self.detectOS()[2]
         self.filesExist(self.manifest, self.userlist)
         if os.path.exists(self.manifest):
@@ -84,80 +81,19 @@ class Settings(object):
                pass
 
     def detectOS(self):
-        compat_os = (['LinuxMint', 'Ubuntu', 'elementary', 'Deepin'])
-        compat_releases = (['17.3', '17.04', '18.1', '18', '14.04','16.04', '16.10', '0.4', '15.4', '18.2'])
-        if self.os_info['ID'] in compat_os and self.os_info['RELEASE'] in compat_releases:
-            if self.os_info['ID'] == 'LinuxMint':
-                if self.os_info['RELEASE'] == '17.3':
-                    windowTitle = self.os_info['ID'] + " Resetter"
-                    manifest = "manifests/mint-17.3-cinnamon.manifest"
-                    userlist = "userlists/mint-17.3-defaultuserlist"
-                    return manifest, userlist, windowTitle
-
-                elif self.os_info['RELEASE'] == '18':
-                    windowTitle = self.os_info['ID'] + " Resetter"
-                    manifest = "manifests/mint-18-cinnamon.manifest"
-                    userlist = "userlists/mint-18.1-default-userlist"
-                    return manifest, userlist, windowTitle
-
-                elif self.os_info['RELEASE'] == '18.1':
-                    windowTitle = self.os_info['ID'] + " Resetter"
-                    manifest = 'manifests/mint-18.1-cinnamon.manifest'
-                    userlist = 'userlists/mint-18.1-default-userlist'
-                    return manifest, userlist, windowTitle
-
-                elif self.os_info['RELEASE'] == '18.2':
-                    windowTitle = self.os_info['ID'] + " Resetter"
-                    manifest = 'manifests/mint-18.2-cinnamon.manifest'
-                    userlist = 'userlists/mint-18.2-default-userlist'
-                    return manifest, userlist, windowTitle
-
-            elif self.os_info['ID'] == 'Ubuntu':
-                if self.os_info['RELEASE'] == '14.04':
-                    windowTitle = self.os_info['ID'] + " Resetter"
-                    manifest = 'manifests/ubuntu-14.04-unity.manifest'
-                    userlist = "userlists/ubuntu-14.04-default-userlist"
-                    return manifest, userlist, windowTitle
-
-                elif self.os_info['RELEASE'] == '16.04':
-                    windowTitle = self.os_info['ID'] + " Resetter"
-                    manifest = 'manifests/ubuntu-16.04-unity.manifest'
-                    userlist = "userlists/ubuntu-16.04-default-userlist"
-                    return manifest, userlist, windowTitle
-
-                elif self.os_info['RELEASE'] == '16.10':
-                    windowTitle = self.os_info['ID'] + " Resetter"
-                    manifest = 'manifests/ubuntu-16.10-unity.manifest'
-                    userlist = 'userlists/ubuntu-16.10-default-userlist'
-                    return manifest, userlist, windowTitle
-
-                elif self.os_info['RELEASE'] == '17.04':
-                    windowTitle = self.os_info['ID'] + " Resetter"
-                    manifest = 'manifests/ubuntu-17.04-unity.manifest'
-                    userlist = 'userlists/ubuntu-17.04-default-userlist'
-                    return manifest, userlist, windowTitle
-
-            elif self.os_info['ID'] == 'elementary':
-                if self.os_info['RELEASE'] == '0.4':
-                    windowTitle = self.os_info['ID'] + " Resetter"
-                    manifest = 'manifests/eos-0.4.manifest'
-                    userlist = 'userlists/eos-0.4-default-userlist'
-                    return manifest, userlist, windowTitle
-
-            elif self.os_info['ID'] == 'Deepin':
-                if self.os_info['RELEASE'] == '15.4':
-                    windowTitle = self.os_info['ID'] + " Resetter"
-                    manifest = 'manifests/deepin-15.4.manifest'
-                    userlist = 'userlists/deepin-15.4-default-userlist'
-                    return manifest, userlist, windowTitle
+        apt_locations = ('/usr/bin/apt', '/usr/lib/apt', '/etc/apt', '/usr/local/bin/apt')
+        if any(os.path.exists(f) for f in apt_locations):
+            manifest = self.os_info['ID'] + self.os_info['RELEASE'] + '.manifest'
+            userlist = self.os_info['ID'] + self.os_info['RELEASE'] + '-default-userlist'
+            window_title = self.os_info['ID']
+            return manifest, userlist, window_title
         else:
-            print ("Your distro ({}) isn't supported at the moment.".format(self.os_info['DESCRIPTION']))
-            print ("If your distro is debian based, please send an email to gaining7@outlook.com for further support")
+            cprint("Apt could not be found, Your distro does not appear to be Debian based.",
+                   'white', 'on_red', attrs=['bold', 'dark', 'reverse', 'underline'])
             sys.exit(1)
 
     def filesExist(self, manifest, userlist):
         if not os.path.isfile(manifest):
-                print ("Manifest could not be found, please choose a manifest for your system if you have one")
-
-        #if not os.path.isfile(userlist):
-                #print ("userlist could not be found, features requiring this file will not work.")
+            print ("{} could not be found, please choose a manifest for your system if you have one".format(manifest))
+        if not os.path.isfile(userlist):
+                print ("userlist could not be found, features requiring this file will not work.")

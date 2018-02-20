@@ -3,6 +3,7 @@ import sys
 import time
 import threading
 
+
 class Spinner:
     busy = False
     delay = 0.1
@@ -12,7 +13,6 @@ class Spinner:
         while 1: 
             for cursor in '|/-\\':
                 yield cursor
-
 
     def __init__(self, delay=None):
         self.spinner_generator = self.spinning_cursor()
@@ -34,6 +34,7 @@ class Spinner:
     def stop(self):
         self.busy = False
         time.sleep(self.delay)
+
 
 class DotProgess:
     busy = False

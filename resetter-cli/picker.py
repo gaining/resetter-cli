@@ -53,7 +53,6 @@ class Picker(object):
             p = subprocess.Popen(command, stdout=null, stderr=null)
             p.wait()
 
-
         for option in options:
             self.all_options.append({
                 "label": option,
@@ -71,16 +70,16 @@ class Picker(object):
 
     def missingsList(self, options=None):
         del self.all_options[:]
-        options = open('apps-to-install').read().splitlines()
-        for option in options:
-            self.all_options.append({
-                "label": option + '\n',
-                "selected": self.checkall,
-                'home_del': False
+        with open('apps-to-install') as options:
+            for option in options:
+                self.all_options.append({
+                    "label": option,
+                    "selected": self.checkall,
+                    'home_del': False
 
-            })
-            self.all_options.sort()
-            self.length = len(self.all_options)
+                })
+                #list(self.all_options).sort()
+                self.length = len(self.all_options)
         self.backup1 = self.all_options[:]
         self.cursor = 0
 
@@ -175,7 +174,7 @@ class Picker(object):
             self.selected = self.cursor + self.offset
             temp = self.getSelected()
             if not self.aborted:
-                self.selcount = len(temp)
+                self.selcount = len(list(temp))
             else:
                 break
 
@@ -238,7 +237,9 @@ class Picker(object):
         elif self.page == 4:
             self.curses_stop()
             self.aborted = True
-            CustomApply('remove-list', False, False)
+
+            #CustomApply('remove-list', False, False) call account instead
+            subprocess.call(['python3','/usr/lib/resetter-cli/Account.py', 'add'])
 
     def fName(self):
         if self.page == 1:
@@ -248,7 +249,7 @@ class Picker(object):
         elif self.page == 3:
             page_title = 'install-list'
         elif self.page == 4:
-            page_title = 'custom-user-removals'
+            page_title = 'custom-user-removals.sh'
         return page_title
 
     def outputSelected(self, output_file):

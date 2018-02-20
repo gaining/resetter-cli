@@ -3,7 +3,7 @@
 
 import apt
 import apt.package
-#import curses
+import curses
 import os
 from AptProgress import UIAcquireProgress, UIInstallProgress
 from Progressive import ProgressBar
@@ -24,7 +24,7 @@ class Installer(object):
         #self.screen = curses.initscr()
         self.aprogress = UIAcquireProgress(8)
         self.iprogress = UIInstallProgress(8)
-        self.response = answer
+        self.answer = answer
         self.cache = apt.Cache(None)
         self.cache.open()
         self.percent = ''
@@ -62,7 +62,7 @@ class Installer(object):
                     pkg = self.cache[pkg_name.strip()]
                     if action and not pkg.is_installed:
                         pkg.mark_install()
-                        p.update_progress(int(loading))
+                        p.update_progress(int(loading), response=True)
                     else:
                         pkg.mark_delete(True, True)
                         p.update_progress(int(loading), sig=8)

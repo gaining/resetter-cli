@@ -1,8 +1,8 @@
 #!/bin/bash
 # add default user
 
-PASSWORD='Kaliko123'
-USERNAME='gainingG'
+PASSWORD='Pizza14()'
+USERNAME='JohnyBoy'
 
 if id -u $USERNAME >/dev/null 2>&1; then
 	echo "$USERNAME already exists not adding"
