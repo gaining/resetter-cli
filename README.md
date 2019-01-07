@@ -1,4 +1,4 @@
-# Resetter-cli 
+# Resetter-cli - Discontinued
 Easiest way to reset your debian based linux back to stock on the terminal. It is built using python and the python-curses library. This is targeted mostly at servers with no GUI but it can be easily be used on a desktop computer with a GUI.
 
 # Status
